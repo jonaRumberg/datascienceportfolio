@@ -34,13 +34,26 @@ app = dash.Dash(__name__)
 
 # Layout des Dash-Dashboards definieren
 app.layout = html.Div([
-    html.Div([
-        html.H3("Data Overview"),
+    html.H1("Smoker prediction", style={'textAlign': 'center'}),
+    html.Details([
+        html.Summary("Show/Hide Participant Data"),
         html.Div([
-            html.Img(src=weight_height, style={'width': '400px', 'height': 'auto'}),
-            html.Img(src=smoker, style={'width': '400px', 'height': 'auto'}),
+            html.Img(src=weight_height, style={'width': '400px', 'height': 'auto', 'marginRight': '20px'}),
+            html.Img(src=smoker, style={'width': '400px', 'height': 'auto', 'marginRight': '20px'}),
             html.Img(src=age, style={'width': '400px', 'height': 'auto'})
-        ], style={'display': 'flex', 'justifyContent': 'space-between', 'gap': '20px'})
+        ], style={'display': 'flex', 'justifyContent': 'center', 'gap': '20px', 'marginBottom': '30px'})
+    ]),
+    dcc.Tabs([
+        dcc.Tab(label='Blood Values', children=[
+            html.Div([
+            ])
+        ]),
+        dcc.Tab(label='Modeling', children=[
+            html.Div([
+                html.H3("Modeling"),
+                html.Img(src=tree, style={'width': '600px', 'height': 'auto'})
+            ])
+        ])
     ])
 ])
 
