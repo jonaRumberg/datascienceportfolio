@@ -1,7 +1,7 @@
 # Imports
 import dash
 from dash import dcc, html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import plotly.express as px
 import pandas as pd
 from sklearn import datasets
@@ -71,7 +71,7 @@ def create_hemoglobin_chart():
     for status in df["smoking"].unique():
         subset = df[df["smoking"] == status]
         plt.hist(subset["hemoglobin"], bins=100, alpha=0.5, label=f"Smoking: {status}")
-    plt.title("Hemoglobin Distribution by Smoking Status")
+    # plt.title("Hemoglobin Distribution by Smoking Status")
     plt.xlabel("Hemoglobin")
     plt.ylabel("Count")
     plt.legend()
@@ -457,6 +457,43 @@ app.layout = html.Div(
                                 html.Div(
                                     [
                                         html.P(
+                                            "Vorhersagegenauigkeit",
+                                            style={
+                                                "textAlign": "center",
+                                                "fontWeight": "bold",
+                                                "marginBottom": "8px",
+                                            },
+                                        ),
+                                        html.P(
+                                            "74%",
+                                            style={
+                                                "textAlign": "center",
+                                                "fontSize": "56px",
+                                                "fontWeight": "bold",
+                                                "color": "#4c96df",
+                                                "margin": "20px 0",
+                                                "textShadow": "0 2px 4px rgba(39, 174, 96, 0.3)",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "width": "calc(100% - 20px)",
+                                        "boxShadow": "0 4px 8px rgba(0,0,0,0.2)",
+                                        "borderRadius": "8px",
+                                        "overflow": "hidden",
+                                        "backgroundColor": "#ffffff",
+                                        "display": "flex",
+                                        "flexDirection": "column",
+                                        "justifyContent": "center",
+                                        "alignItems": "stretch",
+                                        "margin": "10px auto 20px auto",
+                                        "padding": "30px 20px",
+                                        "minHeight": "150px",
+                                    },
+                                ),
+                                html.Div(
+                                    [
+                                        html.P(
                                             "Feature Importance - Random Forest",
                                             style={
                                                 "textAlign": "center",
@@ -554,17 +591,104 @@ app.layout = html.Div(
                                 html.Div(
                                     [
                                         html.H3(
-                                            "Hier gerne Simulationen einfügen",
+                                            "Simulation der Raucher-Wahrscheinlichkeit",
                                             style={
                                                 "textAlign": "center",
-                                                "marginTop": "20px",
+                                                "fontWeight": "bold",
+                                                "marginBottom": "8px",
                                             },
+                                        ),
+                                        
+                                        # Input Bereich
+                                        html.Div(
+                                            [
+                                                html.H4(
+                                                    "📁 CSV-Datei hochladen",
+                                                    style={
+                                                        "fontWeight": "bold",
+                                                        "marginBottom": "10px",
+                                                        "color": "#4c96df",
+                                                    },
+                                                ),
+                                                dcc.Upload(
+                                                    id='upload-csv',
+                                                    children=html.Div([
+                                                        html.P("CSV-Datei hier hineinziehen oder klicken zum Auswählen"),
+                                                ]),
+                                                    style={
+                                                        'width': '100%',
+                                                        'height': '80px',
+                                                        'lineHeight': '80px',
+                                                        'borderWidth': '2px',
+                                                        'borderStyle': 'dashed',
+                                                        'borderColor': '#4c96df',
+                                                        'borderRadius': '8px',
+                                                        'textAlign': 'center',
+                                                        'backgroundColor': '#f8f9fa',
+                                                        'cursor': 'pointer',
+                                                        'marginBottom': '20px',
+                                                    },
+                                                    multiple=False
+                                                ),
+                                            ],
+                                            style={
+                                                "backgroundColor": "#f8f9fa",
+                                                "padding": "20px",
+                                                "borderRadius": "8px",
+                                                "marginBottom": "20px",
+                                                "border": "1px solid #e9ecef",
+                                            }
+                                        ),
+                                        
+                                        # Output Bereich
+                                        html.Div(
+                                            [
+                                                html.H4(
+                                                    "📊 Einschätzung",
+                                                    style={
+                                                        "fontWeight": "bold",
+                                                        "marginBottom": "20px",
+                                                        "color": "#4c96df",
+                                                        "textAlign": "center",
+                                                    },
+                                                ),
+                                                html.Div(
+                                                    id="prediction-output",
+                                                    children=[
+                                                        html.P(
+                                                            "Laden Sie eine CSV-Datei hoch, um eine Vorhersage zu erhalten.",
+                                                            style={
+                                                                "textAlign": "center",
+                                                                "color": "#7f8c8d",
+                                                                "fontSize": "16px",
+                                                            }
+                                                        )
+                                                    ],
+                                                    style={
+                                                        "minHeight": "100px",
+                                                        "display": "flex",
+                                                        "alignItems": "center",
+                                                        "justifyContent": "center",
+                                                    }
+                                                )
+                                            ],
+                                            style={
+                                                "backgroundColor": "#ffffff",
+                                                "padding": "30px",
+                                                "borderRadius": "8px",
+                                                "border": "1px solid #e9ecef",
+                                                "textAlign": "center",
+                                            }
                                         ),
                                     ],
                                     style={
                                         "width": "calc(100% - 20px)",
-                                        "padding": "20px",
+                                        "boxShadow": "0 4px 8px rgba(0,0,0,0.2)",
+                                        "borderRadius": "8px",
+                                        "overflow": "hidden",
+                                        "backgroundColor": "#ffffff",
                                         "margin": "10px auto 30px auto",
+                                        "padding": "30px",
                                     },
                                 ),
                             ],
@@ -651,3 +775,72 @@ app.layout = html.Div(
 # Dash-Anwendung ausführen -----------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     app.run(debug=True)  # Debug Modus für Ausgabe von Fehlermeldungen im Dashboard uvm
+
+# Callback für CSV-Upload und Vorhersage hinzufügen (nach dem Layout)
+@app.callback(
+    Output('prediction-output', 'children'),
+    Input('upload-csv', 'contents'),
+    State('upload-csv', 'filename')
+)
+def update_prediction(contents, filename):
+    if contents is None:
+        return html.P(
+            "Laden Sie eine CSV-Datei hoch, um eine Vorhersage zu erhalten.",
+            style={
+                "textAlign": "center",
+                "color": "#7f8c8d",
+                "fontSize": "16px",
+            }
+        )
+    
+    try:
+        # CSV-Datei verarbeiten
+        content_type, content_string = contents.split(',')
+        decoded = base64.b64decode(content_string)
+        
+        # Dummy-Vorhersage (hier würden Sie Ihr ML-Modell verwenden)
+        import random
+        prediction_probability = random.randint(15, 85)
+        
+        return [
+            html.P(
+                f"Raucher-Wahrscheinlichkeit:",
+                style={
+                    "textAlign": "center",
+                    "fontWeight": "bold",
+                    "marginBottom": "10px",
+                    "color": "#2c3e50",
+                    "fontSize": "18px",
+                }
+            ),
+            html.P(
+                f"{prediction_probability}%",
+                style={
+                    "textAlign": "center",
+                    "fontSize": "48px",
+                    "fontWeight": "bold",
+                    "color": "#e82626" if prediction_probability > 50 else "#27ae60",
+                    "margin": "10px 0",
+                    "textShadow": "0 2px 4px rgba(0,0,0,0.2)",
+                }
+            ),
+            html.P(
+                f"Datei: {filename}",
+                style={
+                    "textAlign": "center",
+                    "color": "#7f8c8d",
+                    "fontSize": "14px",
+                    "marginTop": "15px",
+                }
+            )
+        ]
+    
+    except Exception as e:
+        return html.P(
+            f"Fehler beim Verarbeiten der Datei: {str(e)}",
+            style={
+                "textAlign": "center",
+                "color": "#e74c3c",
+                "fontSize": "16px",
+            }
+        )
