@@ -11,6 +11,7 @@ import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
+import plotly.express as px
 
 # Dashboard im Browser anzeigen
 # http://127.0.0.1:8050/
@@ -29,7 +30,40 @@ tree = encode_image("images/dashboard_tree.jpeg")
 weight_height = encode_image("images/dashboard_weight_height.png")
 age = encode_image("images/dashboard_age.png")
 smoker = encode_image("images/dashboard_smoker.png")
+FeatureImportance_RandomForest = encode_image(
+    "images/dashboard_FeatureImportances_RandomForest.png"
+)
 
+# Diagramme erzeugen
+# Scatterplot erzeugen
+scatter_fig = px.scatter(
+    df,
+    x="height(cm)",
+    y="weight(kg)",
+    opacity=0.3,
+    labels={"height(cm)": "Height (cm)", "weight(kg)": "Weight (kg)"},
+)
+
+# Histogramm für Age Distribution erzeugen
+age_count = df["age"].value_counts().sort_index().reset_index()
+age_count.columns = ["age", "count"]
+
+age_hist_fig = px.bar(
+    age_count,
+    x="age",
+    y="count",
+    labels={"age": "Age", "count": "Count"},
+)
+
+# Smoker - Non-Smoker Verteilung
+smoker_counts = df["smoking"].value_counts().sort_index()
+
+smoker_pie_fig = px.pie(
+    names=["Non-Smoker", "Smoker"],
+    values=smoker_counts,
+    # color_discrete_sequence=px.colors.qualitative.Pastel,
+    color_discrete_sequence=["#4c96df", "#e82626"],
+)
 
 # Dash-Anwendung initialisieren
 app = dash.Dash(__name__)
@@ -200,7 +234,6 @@ app.layout = html.Div(
                 "borderLeft": "4px solid #3498db",
             },
         ),
-        
         # Main Content
         html.Div(
             [
@@ -208,12 +241,12 @@ app.layout = html.Div(
                 html.Details(
                     [
                         html.Summary(
-                            "Show/Hide Participant Data",
+                            "Teilnehmerdaten ausblenden/anzeigen",
                             style={
                                 "cursor": "pointer",
                                 "fontWeight": "bold",
                                 "padding": "10px",
-                                "backgroundColor": "#ededed",
+                                "backgroundColor": "#f1f8ff",
                                 "borderRadius": "5px",
                             },
                         ),
@@ -222,121 +255,176 @@ app.layout = html.Div(
                                 html.Div(
                                     [
                                         html.P(
-                                            "Weight vs Height Distribution",
+                                            "Verteilung von Gewicht und Größe",
                                             style={
                                                 "textAlign": "center",
                                                 "fontWeight": "bold",
+                                                "marginBottom": "8px",
                                             },
                                         ),
-                                        html.Img(
-                                            src=weight_height,
-                                            style={"width": "100%", "height": "auto"},
+                                        # html.Img(
+                                        #     src=weight_height,
+                                        #     style={"width": "100%", "height": "120px", "objectFit": "contain", "marginBottom": "8px"},
+                                        # ),
+                                        dcc.Graph(
+                                            figure=scatter_fig,
+                                            config={"displayModeBar": False},
+                                            style={
+                                                "height": "calc(100% - 40px)",
+                                                "width": "100%",
+                                                "margin": "0 auto",
+                                            },
                                         ),
                                     ],
                                     style={
-                                        "width": "30%",
-                                        "margin": "10px",
+                                        "flex": "1 1 0",
+                                        "minWidth": "0",
+                                        "height": "340px",
                                         "boxShadow": "0 4px 8px rgba(0,0,0,0.2)",
                                         "borderRadius": "8px",
                                         "overflow": "hidden",
-                                        "padding": "10px",
                                         "backgroundColor": "#ffffff",
+                                        "display": "flex",
+                                        "flexDirection": "column",
+                                        "justifyContent": "flex-start",
+                                        "alignItems": "stretch",
+                                        "margin": "10px",
+                                        "padding": "10px",
                                     },
                                 ),
                                 html.Div(
                                     [
                                         html.P(
-                                            "Smoker Distribution",
+                                            "Verteilung von Raucher und Nichtraucher",
                                             style={
                                                 "textAlign": "center",
                                                 "fontWeight": "bold",
+                                                "marginBottom": "8px",
                                             },
                                         ),
-                                        html.Img(
-                                            src=smoker,
-                                            style={"width": "100%", "height": "auto"},
+                                        # html.Img(
+                                        #     src=smoker,
+                                        #     style={"width": "100%", "height": "120px", "objectFit": "contain", "marginBottom": "8px"},
+                                        # ),
+                                        dcc.Graph(
+                                            figure=smoker_pie_fig,
+                                            config={"displayModeBar": False},
+                                            style={
+                                                "height": "calc(100% - 40px)",
+                                                "width": "100%",
+                                                "margin": "0 auto",
+                                            },
                                         ),
                                     ],
                                     style={
-                                        "width": "30%",
-                                        "margin": "10px",
+                                        "flex": "1 1 0",
+                                        "minWidth": "0",
+                                        "height": "340px",
                                         "boxShadow": "0 4px 8px rgba(0,0,0,0.2)",
                                         "borderRadius": "8px",
                                         "overflow": "hidden",
-                                        "padding": "10px",
                                         "backgroundColor": "#ffffff",
+                                        "display": "flex",
+                                        "flexDirection": "column",
+                                        "justifyContent": "flex-start",
+                                        "alignItems": "stretch",
+                                        "margin": "10px",
+                                        "padding": "10px",
                                     },
                                 ),
                                 html.Div(
                                     [
                                         html.P(
-                                            "Age Distribution",
+                                            "Verteilung nach Alter",
                                             style={
                                                 "textAlign": "center",
                                                 "fontWeight": "bold",
+                                                "marginBottom": "8px",
                                             },
                                         ),
-                                        html.Img(
-                                            src=age,
-                                            style={"width": "100%", "height": "auto"},
+                                        # html.Img(
+                                        #     src=age,
+                                        #     style={"width": "100%", "height": "120px", "objectFit": "contain", "marginBottom": "8px"},
+                                        # ),
+                                        dcc.Graph(
+                                            figure=age_hist_fig,
+                                            config={"displayModeBar": False},
+                                            style={
+                                                "height": "calc(100% - 40px)",
+                                                "width": "100%",
+                                                "margin": "0 auto",
+                                            },
                                         ),
                                     ],
                                     style={
-                                        "width": "30%",
-                                        "margin": "10px",
+                                        "flex": "1 1 0",
+                                        "minWidth": "0",
+                                        "height": "340px",
                                         "boxShadow": "0 4px 8px rgba(0,0,0,0.2)",
                                         "borderRadius": "8px",
                                         "overflow": "hidden",
-                                        "padding": "10px",
                                         "backgroundColor": "#ffffff",
+                                        "display": "flex",
+                                        "flexDirection": "column",
+                                        "justifyContent": "flex-start",
+                                        "alignItems": "stretch",
+                                        "margin": "10px",
+                                        "padding": "10px",
                                     },
                                 ),
                             ],
                             style={
                                 "display": "flex",
-                                "flexWrap": "wrap",
-                                "justifyContent": "center",
+                                "flexWrap": "nowrap",
+                                "justifyContent": "space-between",
+                                "alignItems": "stretch",
+                                "width": "100%",
                                 "marginBottom": "30px",
                                 "marginTop": "20px",
+                                "gap": "0",
                             },
                         ),
                     ],
                     open=True,
                 ),
-                
                 # Tabs für verschiedene Abschnitte
                 dcc.Tabs(
                     [
                         dcc.Tab(
-                            label="🩸 Blood Values",
+                            label="🩸 Blutwerte",
                             children=[
                                 html.Div(
                                     [
-                                        html.H3(
-                                            "Blood Value Analysis",
-                                            style={
-                                                "textAlign": "center",
-                                                "marginTop": "20px",
-                                            },
-                                        ),
                                         html.P(
-                                            "This section contains analysis of blood-related parameters.",
+                                            "Hämoglobin-Verteilung im Blut von Rauchern und Nichtrauchern",
                                             style={
                                                 "textAlign": "center",
-                                                "color": "#666",
+                                                "fontWeight": "bold",
+                                                "marginBottom": "8px",
                                             },
                                         ),
                                         html.Div(
-                                            "Weitere Blutwertanalysen werden hier angezeigt.",
+                                            "Hier ist Platz für weitere Informationen, Visualisierungen oder Hinweise.",
                                             style={
                                                 "textAlign": "center",
-                                                "marginTop": "40px",
-                                                "color": "#aaa",
-                                                "fontStyle": "italic",
+                                                "color": "#666",
+                                                "marginTop": "20px",
                                             },
                                         ),
                                     ],
-                                    style={"padding": "20px"},
+                                    style={
+                                        "width": "100%",
+                                        "boxShadow": "0 4px 8px rgba(0,0,0,0.2)",
+                                        "borderRadius": "8px",
+                                        "overflow": "hidden",
+                                        "backgroundColor": "#ffffff",
+                                        "display": "flex",
+                                        "flexDirection": "column",
+                                        "justifyContent": "flex-start",
+                                        "alignItems": "stretch",
+                                        "margin": "10px 0 30px 0",
+                                        "padding": "20px",
+                                    },
                                 ),
                             ],
                             style={
@@ -352,10 +440,10 @@ app.layout = html.Div(
                             },
                             selected_style={
                                 "backgroundColor": "#fde3e3",
-                                "borderTop": "3px solid #c01515",
+                                "borderTop": "3px solid #e82626",
                                 "fontSize": "16px",
                                 "fontWeight": "500",
-                                "color": "#c01515",
+                                "color": "#e82626",
                                 "height": "48px",
                                 "display": "flex",
                                 "alignItems": "center",
@@ -363,7 +451,7 @@ app.layout = html.Div(
                             },
                         ),
                         dcc.Tab(
-                            label="📊 Modeling",
+                            label="📊 Modellierung",
                             children=[
                                 html.Div(
                                     [
@@ -389,7 +477,14 @@ app.layout = html.Div(
                                                         "width": "600px",
                                                         "height": "auto",
                                                     },
-                                                )
+                                                ),
+                                                html.Img(
+                                                    src=FeatureImportance_RandomForest,
+                                                    style={
+                                                        "width": "600px",
+                                                        "height": "auto",
+                                                    },
+                                                ),
                                             ],
                                             style={
                                                 "textAlign": "center",
@@ -423,6 +518,45 @@ app.layout = html.Div(
                                 "justifyContent": "center",
                             },
                         ),
+                        dcc.Tab(
+                            label="🖥️ Simulation",
+                            children=[
+                                html.Div(
+                                    [
+                                        html.H3(
+                                            "Hier gerne Simulationen einfügen",
+                                            style={
+                                                "textAlign": "center",
+                                                "marginTop": "20px",
+                                            },
+                                        ),
+                                    ],
+                                    style={"padding": "20px"},
+                                ),
+                            ],
+                            style={
+                                "backgroundColor": "#f9f9f9",
+                                "padding": "10px",
+                                "fontSize": "16px",
+                                "fontWeight": "500",
+                                "color": "#555",
+                                "height": "48px",  # Einheitliche Höhe
+                                "display": "flex",
+                                "alignItems": "center",
+                                "justifyContent": "center",
+                            },
+                            selected_style={
+                                "backgroundColor": "#f1f8ff",
+                                "borderTop": "3px solid #4c96df",
+                                "fontSize": "16px",
+                                "fontWeight": "500",
+                                "color": "#4c96df",
+                                "height": "48px",
+                                "display": "flex",
+                                "alignItems": "center",
+                                "justifyContent": "center",
+                            },
+                        ),
                     ],
                     style={
                         "marginTop": "20px",
@@ -435,7 +569,6 @@ app.layout = html.Div(
             ],
             style={"padding": "0 30px"},
         ),
-        
         # Footer
         html.Div(
             [
@@ -450,7 +583,7 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.P(
-                            "© 2025 Smoker Prediction Dashboard",
+                            "© 2025 Dashboard zur Raucher-Verifizierung",
                             style={
                                 "margin": "4px 0",
                                 "color": "#4c96df",
