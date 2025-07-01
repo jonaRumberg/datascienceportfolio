@@ -34,6 +34,30 @@ FeatureImportance_RandomForest = encode_image(
     "images/dashboard_FeatureImportances_RandomForest.png"
 )
 
+
+# Hemoglobin-Verteilung nach Raucherstatus erstellen
+def create_hemoglobin_chart():
+    plt.figure(figsize=(10, 5))
+    for status in df["smoking"].unique():
+        subset = df[df["smoking"] == status]
+        plt.hist(subset["hemoglobin"], bins=100, alpha=0.5, label=f"Smoking: {status}")
+    plt.title("Hemoglobin Distribution by Smoking Status")
+    plt.xlabel("Hemoglobin")
+    plt.ylabel("Count")
+    plt.legend()
+
+    # Als Base64 String speichern
+    buf = BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+    plt.close()
+    buf.seek(0)
+    img_base64 = base64.b64encode(buf.read()).decode()
+    return f"data:image/png;base64,{img_base64}"
+
+
+hemoglobin_chart = create_hemoglobin_chart()
+
 # Diagramme erzeugen
 # Scatterplot erzeugen
 scatter_fig = px.scatter(
@@ -90,7 +114,6 @@ app = dash.Dash(__name__)
 #                 html.Img(src=tree, style={'width': '600px', 'height': 'auto'})
 #             ])
 #         ])
-#     ])
 # ])
 
 
@@ -403,17 +426,19 @@ app.layout = html.Div(
                                                 "marginBottom": "8px",
                                             },
                                         ),
-                                        html.Div(
-                                            "Hier ist Platz für weitere Informationen, Visualisierungen oder Hinweise.",
+                                        html.Img(
+                                            src=hemoglobin_chart,
                                             style={
-                                                "textAlign": "center",
-                                                "color": "#666",
-                                                "marginTop": "20px",
+                                                "width": "100%", 
+                                                "height": "400px", 
+                                                "objectFit": "contain", 
+                                                "display": "block", 
+                                                "margin": "0 auto"
                                             },
                                         ),
                                     ],
                                     style={
-                                        "width": "100%",
+                                        "width": "calc(100% - 20px)",
                                         "boxShadow": "0 4px 8px rgba(0,0,0,0.2)",
                                         "borderRadius": "8px",
                                         "overflow": "hidden",
@@ -422,7 +447,7 @@ app.layout = html.Div(
                                         "flexDirection": "column",
                                         "justifyContent": "flex-start",
                                         "alignItems": "stretch",
-                                        "margin": "10px 0 30px 0",
+                                        "margin": "10px auto 30px auto",
                                         "padding": "20px",
                                     },
                                 ),
@@ -433,7 +458,7 @@ app.layout = html.Div(
                                 "fontSize": "16px",
                                 "fontWeight": "500",
                                 "color": "#555",
-                                "height": "48px",  # Einheitliche Höhe
+                                "height": "48px",
                                 "display": "flex",
                                 "alignItems": "center",
                                 "justifyContent": "center",
@@ -453,46 +478,77 @@ app.layout = html.Div(
                         dcc.Tab(
                             label="📊 Modellierung",
                             children=[
+                                # Erste Kachel: Feature Importance
                                 html.Div(
                                     [
-                                        html.H3(
-                                            "Decision Tree Model",
-                                            style={
-                                                "textAlign": "center",
-                                                "marginTop": "20px",
-                                            },
-                                        ),
                                         html.P(
-                                            "Visual representation of the decision tree used for prediction.",
+                                            "Feature Importance - Random Forest",
                                             style={
                                                 "textAlign": "center",
-                                                "color": "#666",
+                                                "fontWeight": "bold",
+                                                "marginBottom": "8px",
                                             },
                                         ),
-                                        html.Div(
-                                            [
-                                                html.Img(
-                                                    src=tree,
-                                                    style={
-                                                        "width": "600px",
-                                                        "height": "auto",
-                                                    },
-                                                ),
-                                                html.Img(
-                                                    src=FeatureImportance_RandomForest,
-                                                    style={
-                                                        "width": "600px",
-                                                        "height": "auto",
-                                                    },
-                                                ),
-                                            ],
+                                        html.Img(
+                                            src=FeatureImportance_RandomForest,
                                             style={
-                                                "textAlign": "center",
-                                                "marginTop": "20px",
+                                                "width": "100%",
+                                                "height": "400px",
+                                                "objectFit": "contain",
+                                                "display": "block",
+                                                "margin": "0 auto"
                                             },
                                         ),
                                     ],
-                                    style={"padding": "20px"},
+                                    style={
+                                        "width": "calc(100% - 20px)",
+                                        "boxShadow": "0 4px 8px rgba(0,0,0,0.2)",
+                                        "borderRadius": "8px",
+                                        "overflow": "hidden",
+                                        "backgroundColor": "#ffffff",
+                                        "display": "flex",
+                                        "flexDirection": "column",
+                                        "justifyContent": "flex-start",
+                                        "alignItems": "stretch",
+                                        "margin": "10px auto 20px auto",
+                                        "padding": "20px",
+                                    },
+                                ),
+                                # Zweite Kachel: Decision Tree
+                                html.Div(
+                                    [
+                                        html.P(
+                                            "Decision Tree Model",
+                                            style={
+                                                "textAlign": "center",
+                                                "fontWeight": "bold",
+                                                "marginBottom": "8px",
+                                            },
+                                        ),
+                                        html.Img(
+                                            src=tree,
+                                            style={
+                                                "width": "100%",
+                                                "height": "400px",
+                                                "objectFit": "contain",
+                                                "display": "block",
+                                                "margin": "0 auto"
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "width": "calc(100% - 20px)",
+                                        "boxShadow": "0 4px 8px rgba(0,0,0,0.2)",
+                                        "borderRadius": "8px",
+                                        "overflow": "hidden",
+                                        "backgroundColor": "#ffffff",
+                                        "display": "flex",
+                                        "flexDirection": "column",
+                                        "justifyContent": "flex-start",
+                                        "alignItems": "stretch",
+                                        "margin": "10px auto 30px auto",
+                                        "padding": "20px",
+                                    },
                                 ),
                             ],
                             style={
@@ -531,7 +587,11 @@ app.layout = html.Div(
                                             },
                                         ),
                                     ],
-                                    style={"padding": "20px"},
+                                    style={
+                                        "width": "calc(100% - 20px)",
+                                        "padding": "20px",
+                                        "margin": "10px auto 30px auto",
+                                    },
                                 ),
                             ],
                             style={
@@ -540,7 +600,7 @@ app.layout = html.Div(
                                 "fontSize": "16px",
                                 "fontWeight": "500",
                                 "color": "#555",
-                                "height": "48px",  # Einheitliche Höhe
+                                "height": "48px",
                                 "display": "flex",
                                 "alignItems": "center",
                                 "justifyContent": "center",
