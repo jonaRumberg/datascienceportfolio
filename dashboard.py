@@ -71,7 +71,6 @@ def create_hemoglobin_chart():
     for status in df["smoking"].unique():
         subset = df[df["smoking"] == status]
         plt.hist(subset["hemoglobin"], bins=100, alpha=0.5, label=f"Smoking: {status}")
-    # plt.title("Hemoglobin Distribution by Smoking Status")
     plt.xlabel("Hemoglobin")
     plt.ylabel("Count")
     plt.legend()
@@ -84,7 +83,25 @@ def create_hemoglobin_chart():
     img_base64 = base64.b64encode(buf.read()).decode()
     return f"data:image/png;base64,{img_base64}"
 
+# Boxplot für Gewicht nach Raucherstatus erstellen
+def create_weight_boxplot():
+    plt.figure(figsize=(8, 5))
+    df.boxplot(column='weight(kg)', by='smoking')
+    # plt.title('Gewichtsverteilung nach Raucherstatus')
+    plt.suptitle('')
+    plt.xlabel('Raucherstatus (0 = Nichtraucher, 1 = Raucher)')
+    plt.ylabel('Gewicht (kg)')
+    
+    buf = BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+    plt.close()
+    buf.seek(0)
+    img_base64 = base64.b64encode(buf.read()).decode()
+    return f"data:image/png;base64,{img_base64}"
+
 hemoglobin_chart = create_hemoglobin_chart()
+weight_boxplot_chart = create_weight_boxplot()
 
 
 # Dash-Anwendung initialisieren -----------------------------------------------------------------------------------------------------------
@@ -390,7 +407,7 @@ app.layout = html.Div(
                 dcc.Tabs(
                     [
                         dcc.Tab(
-                            label="🩸 Blutwerte",
+                            label="🩸💪 Blut- & Körperwerte",
                             children=[
                                 html.Div(
                                     [
@@ -404,6 +421,41 @@ app.layout = html.Div(
                                         ),
                                         html.Img(
                                             src=hemoglobin_chart,
+                                            style={
+                                                "width": "100%",
+                                                "height": "400px",
+                                                "objectFit": "contain",
+                                                "display": "block",
+                                                "margin": "0 auto",
+                                            },
+                                        ),
+                                    ],
+                                    style={
+                                        "width": "calc(100% - 20px)",
+                                        "boxShadow": "0 4px 8px rgba(0,0,0,0.2)",
+                                        "borderRadius": "8px",
+                                        "overflow": "hidden",
+                                        "backgroundColor": "#ffffff",
+                                        "display": "flex",
+                                        "flexDirection": "column",
+                                        "justifyContent": "flex-start",
+                                        "alignItems": "stretch",
+                                        "margin": "10px auto 20px auto",
+                                        "padding": "20px",
+                                    },
+                                ),
+                                html.Div(
+                                    [
+                                        html.P(
+                                            "Gewichtsverteilung: Vergleich zwischen Rauchern und Nichtrauchern",
+                                            style={
+                                                "textAlign": "center",
+                                                "fontWeight": "bold",
+                                                "marginBottom": "8px",
+                                            },
+                                        ),
+                                        html.Img(
+                                            src=weight_boxplot_chart,
                                             style={
                                                 "width": "100%",
                                                 "height": "400px",
@@ -798,49 +850,134 @@ def update_prediction(contents, filename):
         content_type, content_string = contents.split(',')
         decoded = base64.b64decode(content_string)
         
+        # CSV in DataFrame laden
+        import io
+        df_uploaded = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+        
         # Dummy-Vorhersage (hier würden Sie Ihr ML-Modell verwenden)
         import random
         prediction_probability = random.randint(15, 85)
         
-        return [
-            html.P(
-                f"Raucher-Wahrscheinlichkeit:",
-                style={
-                    "textAlign": "center",
-                    "fontWeight": "bold",
-                    "marginBottom": "10px",
-                    "color": "#2c3e50",
-                    "fontSize": "18px",
-                }
-            ),
-            html.P(
-                f"{prediction_probability}%",
-                style={
-                    "textAlign": "center",
-                    "fontSize": "48px",
-                    "fontWeight": "bold",
-                    "color": "#e82626" if prediction_probability > 50 else "#27ae60",
-                    "margin": "10px 0",
-                    "textShadow": "0 2px 4px rgba(0,0,0,0.2)",
-                }
-            ),
-            html.P(
-                f"Datei: {filename}",
-                style={
-                    "textAlign": "center",
-                    "color": "#7f8c8d",
-                    "fontSize": "14px",
-                    "marginTop": "15px",
-                }
-            )
+        # Datei-Informationen anzeigen
+        file_info = [
+            html.Div([
+                html.H5(
+                    f"📄 Datei erfolgreich geladen: {filename}",
+                    style={
+                        "color": "#27ae60",
+                        "fontWeight": "bold",
+                        "marginBottom": "15px",
+                        "textAlign": "center"
+                    }
+                ),
+                html.Div([
+                    html.P(f"Anzahl Zeilen: {len(df_uploaded)}", style={"margin": "5px 0", "fontWeight": "bold"}),
+                    html.P(f"Anzahl Spalten: {len(df_uploaded.columns)}", style={"margin": "5px 0", "fontWeight": "bold"}),
+                    html.P(f"Spalten: {', '.join(df_uploaded.columns)}", style={"margin": "5px 0", "fontSize": "14px"}),
+                ], style={
+                    "backgroundColor": "#f8f9fa",
+                    "padding": "15px",
+                    "borderRadius": "8px",
+                    "marginBottom": "20px",
+                    "border": "1px solid #e9ecef"
+                })
+            ]),
+            
+            # Vorschau der ersten Zeilen
+            html.Div([
+                html.H6("📊 Datenvorschau (erste 5 Zeilen):", style={"fontWeight": "bold", "marginBottom": "10px"}),
+                html.Div([
+                    html.Table([
+                        html.Thead([
+                            html.Tr([html.Th(col, style={"padding": "8px", "backgroundColor": "#f1f8ff", "fontWeight": "bold"}) for col in df_uploaded.columns])
+                        ]),
+                        html.Tbody([
+                            html.Tr([
+                                html.Td(str(df_uploaded.iloc[i][col]), style={"padding": "8px", "borderBottom": "1px solid #dee2e6"}) 
+                                for col in df_uploaded.columns
+                            ]) for i in range(min(5, len(df_uploaded)))
+                        ])
+                    ], style={
+                        "width": "100%",
+                        "borderCollapse": "collapse",
+                        "border": "1px solid #dee2e6",
+                        "fontSize": "14px"
+                    })
+                ], style={"overflowX": "auto", "marginBottom": "20px"})
+            ]),
+            
+            # Vorhersage-Ergebnis
+            html.Div([
+                html.Hr(style={"margin": "20px 0", "border": "1px solid #e9ecef"}),
+                html.P(
+                    f"🎯 Raucher-Wahrscheinlichkeit:",
+                    style={
+                        "textAlign": "center",
+                        "fontWeight": "bold",
+                        "marginBottom": "10px",
+                        "color": "#2c3e50",
+                        "fontSize": "18px",
+                    }
+                ),
+                html.P(
+                    f"{prediction_probability}%",
+                    style={
+                        "textAlign": "center",
+                        "fontSize": "48px",
+                        "fontWeight": "bold",
+                        "color": "#e82626" if prediction_probability > 50 else "#27ae60",
+                        "margin": "10px 0",
+                        "textShadow": "0 2px 4px rgba(0,0,0,0.2)",
+                    }
+                ),
+                html.P(
+                    f"{'⚠️ Hohe Raucher-Wahrscheinlichkeit' if prediction_probability > 50 else '✅ Niedrige Raucher-Wahrscheinlichkeit'}",
+                    style={
+                        "textAlign": "center",
+                        "color": "#e82626" if prediction_probability > 50 else "#27ae60",
+                        "fontSize": "16px",
+                        "fontWeight": "bold",
+                        "marginTop": "10px",
+                    }
+                )
+            ])
         ]
+        
+        return file_info
     
     except Exception as e:
-        return html.P(
-            f"Fehler beim Verarbeiten der Datei: {str(e)}",
-            style={
-                "textAlign": "center",
-                "color": "#e74c3c",
-                "fontSize": "16px",
-            }
-        )
+        return [
+            html.Div([
+                html.P(
+                    f"❌ Fehler beim Verarbeiten der Datei:",
+                    style={
+                        "textAlign": "center",
+                        "color": "#e74c3c",
+                        "fontSize": "18px",
+                        "fontWeight": "bold",
+                        "marginBottom": "10px"
+                    }
+                ),
+                html.P(
+                    f"Datei: {filename}",
+                    style={
+                        "textAlign": "center",
+                        "color": "#7f8c8d",
+                        "fontSize": "14px",
+                        "marginBottom": "10px"
+                    }
+                ),
+                html.P(
+                    f"Fehlerdetails: {str(e)}",
+                    style={
+                        "textAlign": "center",
+                        "color": "#e74c3c",
+                        "fontSize": "14px",
+                        "backgroundColor": "#ffeaea",
+                        "padding": "10px",
+                        "borderRadius": "5px",
+                        "border": "1px solid #f5c6cb"
+                    }
+                )
+            ])
+        ]
