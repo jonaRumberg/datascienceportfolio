@@ -1,3 +1,4 @@
+# Imports
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
@@ -30,35 +31,10 @@ tree = encode_image("images/dashboard_tree.jpeg")
 weight_height = encode_image("images/dashboard_weight_height.png")
 age = encode_image("images/dashboard_age.png")
 smoker = encode_image("images/dashboard_smoker.png")
-FeatureImportance_RandomForest = encode_image(
-    "images/dashboard_FeatureImportances_RandomForest.png"
-)
+FeatureImportance_RandomForest = encode_image("images/dashboard_FeatureImportances_RandomForest.png")
 
 
-# Hemoglobin-Verteilung nach Raucherstatus erstellen
-def create_hemoglobin_chart():
-    plt.figure(figsize=(10, 5))
-    for status in df["smoking"].unique():
-        subset = df[df["smoking"] == status]
-        plt.hist(subset["hemoglobin"], bins=100, alpha=0.5, label=f"Smoking: {status}")
-    plt.title("Hemoglobin Distribution by Smoking Status")
-    plt.xlabel("Hemoglobin")
-    plt.ylabel("Count")
-    plt.legend()
-
-    # Als Base64 String speichern
-    buf = BytesIO()
-    plt.tight_layout()
-    plt.savefig(buf, format="png", dpi=150, bbox_inches="tight")
-    plt.close()
-    buf.seek(0)
-    img_base64 = base64.b64encode(buf.read()).decode()
-    return f"data:image/png;base64,{img_base64}"
-
-
-hemoglobin_chart = create_hemoglobin_chart()
-
-# Diagramme erzeugen
+# Diagramme erzeugen -----------------------------------------------------------------------------------------------------------
 # Scatterplot erzeugen
 scatter_fig = px.scatter(
     df,
@@ -89,44 +65,41 @@ smoker_pie_fig = px.pie(
     color_discrete_sequence=["#4c96df", "#e82626"],
 )
 
-# Dash-Anwendung initialisieren
+# Hemoglobin-Verteilung nach Raucherstatus erstellen
+def create_hemoglobin_chart():
+    plt.figure(figsize=(10, 5))
+    for status in df["smoking"].unique():
+        subset = df[df["smoking"] == status]
+        plt.hist(subset["hemoglobin"], bins=100, alpha=0.5, label=f"Smoking: {status}")
+    plt.title("Hemoglobin Distribution by Smoking Status")
+    plt.xlabel("Hemoglobin")
+    plt.ylabel("Count")
+    plt.legend()
+
+    buf = BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+    plt.close()
+    buf.seek(0)
+    img_base64 = base64.b64encode(buf.read()).decode()
+    return f"data:image/png;base64,{img_base64}"
+
+hemoglobin_chart = create_hemoglobin_chart()
+
+
+# Dash-Anwendung initialisieren -----------------------------------------------------------------------------------------------------------
 app = dash.Dash(__name__)
-
-# # Layout des Dash-Dashboards definieren
-# app.layout = html.Div([
-#     html.H1("Smoker prediction", style={'textAlign': 'center'}),
-#     html.Details([
-#         html.Summary("Show/Hide Participant Data"),
-#         html.Div([
-#             html.Img(src=weight_height, style={'width': '400px', 'height': 'auto', 'marginRight': '20px'}),
-#             html.Img(src=smoker, style={'width': '400px', 'height': 'auto', 'marginRight': '20px'}),
-#             html.Img(src=age, style={'width': '400px', 'height': 'auto'})
-#         ], style={'display': 'flex', 'justifyContent': 'center', 'gap': '20px', 'marginBottom': '30px'})
-#     ]),
-#     dcc.Tabs([
-#         dcc.Tab(label='Blood Values', children=[
-#             html.Div([
-#             ])
-#         ]),
-#         dcc.Tab(label='Modeling', children=[
-#             html.Div([
-#                 html.H3("Modeling"),
-#                 html.Img(src=tree, style={'width': '600px', 'height': 'auto'})
-#             ])
-#         ])
-# ])
-
 
 # Layout des Dash-Dashboards definieren
 app.layout = html.Div(
     [
-        # Header
+        # Header -----------------------------------------------------------------------------------------------------------
         html.Div(
             [
                 # Oberer Bereich mit Logo und Kassen-Identifikation
                 html.Div(
                     [
-                        # Linke Seite: Logo und Name
+                        # Linke Seite
                         html.Div(
                             [
                                 html.Img(
@@ -153,7 +126,7 @@ app.layout = html.Div(
                             ],
                             style={"display": "flex", "alignItems": "center"},
                         ),
-                        # Rechte Seite: Interne Dashboard-Kennzeichnung
+                        # Rechte Seite
                         html.Div(
                             [
                                 html.P(
@@ -192,6 +165,7 @@ app.layout = html.Div(
                         "backgroundColor": "#4c96df",
                     }
                 ),
+
                 # Unterer Bereich mit Dashboard-Titel und Beschreibung
                 html.Div(
                     [
@@ -235,7 +209,8 @@ app.layout = html.Div(
                 "marginBottom": "25px",
             },
         ),
-        # Informationsleiste (optional)
+
+        # Info-Leiste
         html.Div(
             [
                 html.Div(
@@ -257,10 +232,11 @@ app.layout = html.Div(
                 "borderLeft": "4px solid #3498db",
             },
         ),
-        # Main Content
+
+        # Main Content -----------------------------------------------------------------------------------------------------------
         html.Div(
             [
-                # Übersicht über die Teilnehmerdaten
+                # Übersicht über die Teilnehmerdaten -----------------------------------------------------------------------------------------------------------
                 html.Details(
                     [
                         html.Summary(
@@ -410,7 +386,7 @@ app.layout = html.Div(
                     ],
                     open=True,
                 ),
-                # Tabs für verschiedene Abschnitte
+                # Tabs für verschiedene Abschnitte -----------------------------------------------------------------------------------------------------------
                 dcc.Tabs(
                     [
                         dcc.Tab(
@@ -429,11 +405,11 @@ app.layout = html.Div(
                                         html.Img(
                                             src=hemoglobin_chart,
                                             style={
-                                                "width": "100%", 
-                                                "height": "400px", 
-                                                "objectFit": "contain", 
-                                                "display": "block", 
-                                                "margin": "0 auto"
+                                                "width": "100%",
+                                                "height": "400px",
+                                                "objectFit": "contain",
+                                                "display": "block",
+                                                "margin": "0 auto",
                                             },
                                         ),
                                     ],
@@ -478,7 +454,6 @@ app.layout = html.Div(
                         dcc.Tab(
                             label="📊 Modellierung",
                             children=[
-                                # Erste Kachel: Feature Importance
                                 html.Div(
                                     [
                                         html.P(
@@ -496,7 +471,7 @@ app.layout = html.Div(
                                                 "height": "400px",
                                                 "objectFit": "contain",
                                                 "display": "block",
-                                                "margin": "0 auto"
+                                                "margin": "0 auto",
                                             },
                                         ),
                                     ],
@@ -514,7 +489,6 @@ app.layout = html.Div(
                                         "padding": "20px",
                                     },
                                 ),
-                                # Zweite Kachel: Decision Tree
                                 html.Div(
                                     [
                                         html.P(
@@ -532,7 +506,7 @@ app.layout = html.Div(
                                                 "height": "400px",
                                                 "objectFit": "contain",
                                                 "display": "block",
-                                                "margin": "0 auto"
+                                                "margin": "0 auto",
                                             },
                                         ),
                                     ],
@@ -629,7 +603,8 @@ app.layout = html.Div(
             ],
             style={"padding": "0 30px"},
         ),
-        # Footer
+
+        # Footer -----------------------------------------------------------------------------------------------------------
         html.Div(
             [
                 html.Hr(
@@ -673,6 +648,6 @@ app.layout = html.Div(
     style={"fontFamily": "'Inter', sans-serif", "margin": "0", "padding": "0"},
 )
 
-# Dash-Anwendung ausführen
+# Dash-Anwendung ausführen -----------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     app.run(debug=True)  # Debug Modus für Ausgabe von Fehlermeldungen im Dashboard uvm
