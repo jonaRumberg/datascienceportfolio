@@ -13,6 +13,11 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 import plotly.express as px
+import joblib
+import io
+import sys
+import logging
+
 
 # Dashboard im Browser anzeigen
 # http://127.0.0.1:8050/
@@ -824,9 +829,9 @@ app.layout = html.Div(
     style={"fontFamily": "'Inter', sans-serif", "margin": "0", "padding": "0"},
 )
 
-# Dash-Anwendung ausführen -----------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    app.run(debug=True)  # Debug Modus für Ausgabe von Fehlermeldungen im Dashboard uvm
+# Modell laden (nur einmal beim Start des Dashboards)
+rfc_model = joblib.load('smoker_rfc_model.joblib')
+#model_columns = joblib.load('smoker_model_columns.joblib')
 
 # Callback für CSV-Upload und Vorhersage hinzufügen (nach dem Layout)
 @app.callback(
@@ -846,17 +851,20 @@ def update_prediction(contents, filename):
         )
     
     try:
+        print("try startet", file=sys.stderr)
         # CSV-Datei verarbeiten
         content_type, content_string = contents.split(',')
         decoded = base64.b64decode(content_string)
         
         # CSV in DataFrame laden
-        import io
         df_uploaded = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+
+        # Spalten in richtige Reihenfolge bringen
+        #df_uploaded = df_uploaded[model_columns]
         
-        # Dummy-Vorhersage (hier würden Sie Ihr ML-Modell verwenden)
-        import random
-        prediction_probability = random.randint(15, 85)
+        # Vorhersagen berechnen
+        pred_probs = rfc_model.predict_proba(df_uploaded)[:,1]
+        prediction_probability = round(pred_probs.mean() * 100, 2)
         
         # Datei-Informationen anzeigen
         file_info = [
@@ -981,3 +989,7 @@ def update_prediction(contents, filename):
                 )
             ])
         ]
+
+# Dash-Anwendung ausführen -----------------------------------------------------------------------------------------------------------
+if __name__ == "__main__":
+    app.run(debug=True)  # Debug Modus für Ausgabe von Fehlermeldungen im Dashboard uvm
