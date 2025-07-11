@@ -674,8 +674,8 @@ app.layout = html.Div(
                                                 ]),
                                                     style={
                                                         'width': '100%',
-                                                        'height': '80px',
-                                                        'lineHeight': '80px',
+                                                        'height': '100px',
+                                                        'lineHeight': '60px',
                                                         'borderWidth': '2px',
                                                         'borderStyle': 'dashed',
                                                         'borderColor': '#4c96df',
@@ -684,6 +684,10 @@ app.layout = html.Div(
                                                         'backgroundColor': '#f8f9fa',
                                                         'cursor': 'pointer',
                                                         'marginBottom': '20px',
+                                                        'display': 'flex',
+                                                        'alignItems': 'center',
+                                                        'justifyContent': 'center',
+                                                        'padding': '10px',
                                                     },
                                                     multiple=False
                                                 ),
@@ -701,8 +705,9 @@ app.layout = html.Div(
                                         html.Div(
                                             [
                                                 html.H4(
-                                                    "📊 Einschätzung",
+                                                    "Einschätzung",
                                                     style={
+                                                        "fontSize": "20px",
                                                         "fontWeight": "bold",
                                                         "marginBottom": "20px",
                                                         "color": "#4c96df",
@@ -724,8 +729,10 @@ app.layout = html.Div(
                                                     style={
                                                         "minHeight": "100px",
                                                         "display": "flex",
-                                                        "alignItems": "center",
-                                                        "justifyContent": "center",
+                                                        "flexDirection": "column",
+                                                        "alignItems": "stretch",
+                                                        "justifyContent": "flex-start",
+                                                        "gap": "0",
                                                     }
                                                 )
                                             ],
@@ -868,62 +875,15 @@ def update_prediction(contents, filename):
         
         # Datei-Informationen anzeigen
         file_info = [
+            # Erste Kachel: Raucher-Wahrscheinlichkeit
             html.Div([
-                html.H5(
-                    f"📄 Datei erfolgreich geladen: {filename}",
-                    style={
-                        "color": "#27ae60",
-                        "fontWeight": "bold",
-                        "marginBottom": "15px",
-                        "textAlign": "center"
-                    }
-                ),
-                html.Div([
-                    html.P(f"Anzahl Zeilen: {len(df_uploaded)}", style={"margin": "5px 0", "fontWeight": "bold"}),
-                    html.P(f"Anzahl Spalten: {len(df_uploaded.columns)}", style={"margin": "5px 0", "fontWeight": "bold"}),
-                    html.P(f"Spalten: {', '.join(df_uploaded.columns)}", style={"margin": "5px 0", "fontSize": "14px"}),
-                ], style={
-                    "backgroundColor": "#f8f9fa",
-                    "padding": "15px",
-                    "borderRadius": "8px",
-                    "marginBottom": "20px",
-                    "border": "1px solid #e9ecef"
-                })
-            ]),
-            
-            # Vorschau der ersten Zeilen
-            html.Div([
-                html.H6("📊 Datenvorschau (erste 5 Zeilen):", style={"fontWeight": "bold", "marginBottom": "10px"}),
-                html.Div([
-                    html.Table([
-                        html.Thead([
-                            html.Tr([html.Th(col, style={"padding": "8px", "backgroundColor": "#f1f8ff", "fontWeight": "bold"}) for col in df_uploaded.columns])
-                        ]),
-                        html.Tbody([
-                            html.Tr([
-                                html.Td(str(df_uploaded.iloc[i][col]), style={"padding": "8px", "borderBottom": "1px solid #dee2e6"}) 
-                                for col in df_uploaded.columns
-                            ]) for i in range(min(5, len(df_uploaded)))
-                        ])
-                    ], style={
-                        "width": "100%",
-                        "borderCollapse": "collapse",
-                        "border": "1px solid #dee2e6",
-                        "fontSize": "14px"
-                    })
-                ], style={"overflowX": "auto", "marginBottom": "20px"})
-            ]),
-            
-            # Vorhersage-Ergebnis
-            html.Div([
-                html.Hr(style={"margin": "20px 0", "border": "1px solid #e9ecef"}),
                 html.P(
-                    f"🎯 Raucher-Wahrscheinlichkeit:",
+                    f"🚬 Raucher-Wahrscheinlichkeit 🚬",
                     style={
                         "textAlign": "center",
                         "fontWeight": "bold",
                         "marginBottom": "10px",
-                        "color": "#2c3e50",
+                        "color": "#4c96df",
                         "fontSize": "18px",
                     }
                 ),
@@ -948,7 +908,73 @@ def update_prediction(contents, filename):
                         "marginTop": "10px",
                     }
                 )
-            ])
+            ], style={
+                "backgroundColor": "#ffffff",
+                "padding": "30px",
+                "borderRadius": "8px",
+                "marginBottom": "10px",
+                "border": "1px solid #e9ecef",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.1)",
+                "flex": "1",
+                "minHeight": "200px",
+                "display": "flex",
+                "flexDirection": "column",
+                "justifyContent": "center",
+            }),
+            
+            # Zweite Kachel: Datenvorschau mit Datei-Informationen
+            html.Div([
+                html.H5(
+                    f"Datenvorschau: {filename}",
+                    style={
+                        "color": "#4c96df",
+                        "fontSize": "18px",
+                        "fontWeight": "bold",
+                        "marginBottom": "15px",
+                        "textAlign": "center"
+                    }
+                ),
+                html.Div([
+                    html.P(f"Anzahl Zeilen: {len(df_uploaded)} | Anzahl Spalten: {len(df_uploaded.columns)}", 
+                           style={"margin": "10px 0", "fontWeight": "bold", "textAlign": "center"}),
+                ], style={
+                    "backgroundColor": "#f8f9fa",
+                    "padding": "10px",
+                    "borderRadius": "8px",
+                    "border": "1px solid #e9ecef",
+                    "marginBottom": "15px"
+                }),
+                html.Div([
+                    html.Table([
+                        html.Thead([
+                            html.Tr([html.Th(col, style={"padding": "8px", "backgroundColor": "#f1f8ff", "fontWeight": "bold"}) for col in df_uploaded.columns[:10]])
+                        ]),
+                        html.Tbody([
+                            html.Tr([
+                                html.Td(str(df_uploaded.iloc[i][col]), style={"padding": "8px", "borderBottom": "1px solid #dee2e6"}) 
+                                for col in df_uploaded.columns[:10]
+                            ]) for i in range(min(5, len(df_uploaded)))
+                        ])
+                    ], style={
+                        "width": "100%",
+                        "borderCollapse": "collapse",
+                        "border": "1px solid #dee2e6",
+                        "fontSize": "14px"
+                    })
+                ], style={"overflowX": "auto"})
+            ], style={
+                "backgroundColor": "#ffffff",
+                "padding": "20px",
+                "borderRadius": "8px",
+                "marginBottom": "0px",
+                "border": "1px solid #e9ecef",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.1)",
+                "flex": "1",
+                "minHeight": "200px",
+                "display": "flex",
+                "flexDirection": "column",
+                "justifyContent": "flex-start",
+            })
         ]
         
         return file_info
@@ -989,6 +1015,37 @@ def update_prediction(contents, filename):
                 )
             ])
         ]
+
+# Zusätzlicher Callback für Upload-Status
+@app.callback(
+    Output('upload-csv', 'children'),
+    Input('upload-csv', 'contents'),
+    State('upload-csv', 'filename')
+)
+def update_upload_status(contents, filename):
+    if contents is None:
+        return html.Div([
+            html.P("CSV-Datei hier hineinziehen oder klicken zum Auswählen"),
+        ], style={"textAlign": "center", "margin": "0"})
+    else:
+        return html.Div([
+            html.Div([
+                html.Span("✅", style={"fontSize": "24px", "marginRight": "10px", "color": "#27ae60"}),
+                html.Span(f"Datei hochgeladen: {filename}", style={"fontWeight": "bold", "color": "#27ae60"}),
+            ], style={
+                "display": "flex", 
+                "alignItems": "center", 
+                "justifyContent": "center",
+                "marginBottom": "8px"
+            }),
+            html.P("Klicken Sie hier, um eine neue Datei hochzuladen", 
+                   style={
+                       "fontSize": "12px", 
+                       "color": "#7f8c8d", 
+                       "margin": "0",
+                       "textAlign": "center"
+                   })
+        ], style={"display": "flex", "flexDirection": "column", "justifyContent": "center", "height": "100%"})
 
 # Dash-Anwendung ausführen -----------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
