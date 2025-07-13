@@ -4,11 +4,7 @@ from dash import dcc, html
 from dash.dependencies import Input, Output, State
 import plotly.express as px
 import pandas as pd
-from sklearn import datasets
-from sklearn.tree import DecisionTreeClassifier, export_text
-from sklearn.model_selection import train_test_split
 from sklearn import tree
-import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
@@ -16,8 +12,6 @@ import plotly.express as px
 import joblib
 import io
 import sys
-import logging
-
 
 # Dashboard im Browser anzeigen
 # http://127.0.0.1:8050/
@@ -33,9 +27,6 @@ def encode_image(image_file):
 
 
 tree = encode_image("images/dashboard_tree.jpeg")
-weight_height = encode_image("images/dashboard_weight_height.png")
-age = encode_image("images/dashboard_age.png")
-smoker = encode_image("images/dashboard_smoker.png")
 FeatureImportance_RandomForest = encode_image("images/dashboard_FeatureImportances_RandomForest.png")
 
 
@@ -66,7 +57,6 @@ smoker_counts = df["smoking"].value_counts().sort_index()
 smoker_pie_fig = px.pie(
     names=["Non-Smoker", "Smoker"],
     values=smoker_counts,
-    # color_discrete_sequence=px.colors.qualitative.Pastel,
     color_discrete_sequence=["#4c96df", "#e82626"],
 )
 
@@ -92,7 +82,6 @@ def create_hemoglobin_chart():
 def create_weight_boxplot():
     plt.figure(figsize=(8, 5))
     df.boxplot(column='weight(kg)', by='smoking')
-    # plt.title('Gewichtsverteilung nach Raucherstatus')
     plt.suptitle('')
     plt.xlabel('Raucherstatus (0 = Nichtraucher, 1 = Raucher)')
     plt.ylabel('Gewicht (kg)')
@@ -239,7 +228,6 @@ app.layout = html.Div(
                     [
                         html.Span("ℹ️", style={"marginRight": "8px"}),
                         html.Span(
-                            # "Dieses System dient ausschließlich zur internen Verwendung gemäß DSGVO §15. Bitte behandeln Sie alle Daten vertraulich."
                             "Dieses System dient ausschließlich zur internen Verwendung und befindet sich aktuell in einer Testversion. Bitte behandeln Sie alle Daten vertraulich."
                         ),
                     ]
@@ -283,10 +271,6 @@ app.layout = html.Div(
                                                 "marginBottom": "8px",
                                             },
                                         ),
-                                        # html.Img(
-                                        #     src=weight_height,
-                                        #     style={"width": "100%", "height": "120px", "objectFit": "contain", "marginBottom": "8px"},
-                                        # ),
                                         dcc.Graph(
                                             figure=scatter_fig,
                                             config={"displayModeBar": False},
@@ -323,10 +307,6 @@ app.layout = html.Div(
                                                 "marginBottom": "8px",
                                             },
                                         ),
-                                        # html.Img(
-                                        #     src=smoker,
-                                        #     style={"width": "100%", "height": "120px", "objectFit": "contain", "marginBottom": "8px"},
-                                        # ),
                                         dcc.Graph(
                                             figure=smoker_pie_fig,
                                             config={"displayModeBar": False},
@@ -363,10 +343,6 @@ app.layout = html.Div(
                                                 "marginBottom": "8px",
                                             },
                                         ),
-                                        # html.Img(
-                                        #     src=age,
-                                        #     style={"width": "100%", "height": "120px", "objectFit": "contain", "marginBottom": "8px"},
-                                        # ),
                                         dcc.Graph(
                                             figure=age_hist_fig,
                                             config={"displayModeBar": False},
@@ -838,7 +814,6 @@ app.layout = html.Div(
 
 # Modell laden (nur einmal beim Start des Dashboards)
 rfc_model = joblib.load('smoker_rfc_model.joblib')
-#model_columns = joblib.load('smoker_model_columns.joblib')
 
 # Callback für CSV-Upload und Vorhersage hinzufügen (nach dem Layout)
 @app.callback(
@@ -865,9 +840,6 @@ def update_prediction(contents, filename):
         
         # CSV in DataFrame laden
         df_uploaded = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
-
-        # Spalten in richtige Reihenfolge bringen
-        #df_uploaded = df_uploaded[model_columns]
         
         # Vorhersagen berechnen
         pred_probs = rfc_model.predict_proba(df_uploaded)[:,1]
