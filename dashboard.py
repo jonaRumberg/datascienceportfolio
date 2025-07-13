@@ -4,9 +4,6 @@ from dash import dcc, html
 from dash.dependencies import Input, Output, State
 import plotly.express as px
 import pandas as pd
-from sklearn import datasets
-from sklearn.tree import DecisionTreeClassifier, export_text
-from sklearn.model_selection import train_test_split
 from sklearn import tree
 import plotly.graph_objs as go
 import matplotlib.pyplot as plt
@@ -16,8 +13,6 @@ import plotly.express as px
 import joblib
 import io
 import sys
-import logging
-
 
 # Dashboard im Browser anzeigen
 # http://127.0.0.1:8050/
